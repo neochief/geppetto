@@ -11,7 +11,7 @@ type FileContent = {
     output?: string;
 };
 
-async function readFileContent(filePath: string): Promise<FileContent> {
+async function readFileContent(filePath: string, defaultRole = 'user'): Promise<FileContent> {
     if (!filePath) {
         throw `Error: File argument is required.`;
     }
@@ -31,17 +31,19 @@ async function readFileContent(filePath: string): Promise<FileContent> {
 
     result.messages = [] as ChatCompletionMessageParam[];
     if (data.include) {
-        const includePaths = Array.isArray(data.include) ? data.include : [data.include];
-        for (const includePath of includePaths) {
+        const includeStrings = Array.isArray(data.include) ? data.include : [data.include];
+        for (const includeString of includeStrings) {
+            const [includePath, includeRole] = includeString.split(/ +as +/);
+
             const fullPath = path.join(path.dirname(filePath), includePath);
             if (!fs.existsSync(fullPath)) {
                 throw `Error: Included file ${ fullPath } does not exist.`;
             }
-            const includeContent = await readFileContent(fullPath);
+            const includeContent = await readFileContent(fullPath, includeRole);
             result.messages = result.messages.concat(includeContent.messages);
         }
     }
-    result.messages.push({role: data.role || 'user', content: content} as ChatCompletionMessageParam);
+    result.messages.push({role: data.role || defaultRole, content: content} as ChatCompletionMessageParam);
 
     if (data.output) {
         const includePath = data.output;

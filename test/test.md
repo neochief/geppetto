@@ -1,6 +1,6 @@
 ---
 include:
-  - _test-include.md
+  - _test-include.md   as   assistant
 output: test-result.md 
 ---
 
