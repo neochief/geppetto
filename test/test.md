@@ -1,7 +1,7 @@
 ---
 include:
   - _test-include.md   as   assistant
-output: test-result.md 
+output: results
 ---
 
 Then translate it to Ukrainian.

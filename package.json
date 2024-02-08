@@ -11,7 +11,7 @@
     "build": "node esbuild.config.js",
     "watch": "nodemon --exec 'npm run build'",
     "postbuild": "chmod +x dist/bin/gep.js",
-    "test": "node dist/bin/gep.js test/test.md"
+    "test": "node dist/bin/gep.js test/test.md -t 2"
   },
   "nodemonConfig": {
     "ignore": [
