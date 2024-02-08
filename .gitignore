@@ -1,0 +1,7 @@
+out
+dist
+dist_webview-ui
+node_modules
+.vscode-test/
+*.vsix
+*.afdesign~lock~

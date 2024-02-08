@@ -1,0 +1,35 @@
+{
+  "name": "geppetto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "commonjs",
+  "bin": {
+    "gep": "./dist/bin/gep.js"
+  },
+  "scripts": {
+    "build": "node esbuild.config.js",
+    "watch": "nodemon --exec 'npm run build'",
+    "postbuild": "chmod +x dist/bin/gep.js",
+    "test": "node dist/bin/gep.js test/test.md"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/test/**",
+      "dist/**/*"
+    ],
+    "ext": "ts,js,json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "openai": "^4.26.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "esbuild": "^0.20.0",
+    "nodemon": "^3.0.3"
+  }
+}
