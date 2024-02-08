@@ -2,11 +2,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import matter from 'gray-matter';
 import OpenAI from 'openai';
+import { ChatCompletionMessageParam, ChatCompletionUserMessageParam } from "openai/resources";
 
 const openai = new OpenAI();
 
 type FileContent = {
-    body: string;
+    messages: ChatCompletionMessageParam[];
     output?: string;
 };
 
@@ -28,7 +29,7 @@ async function readFileContent(filePath: string): Promise<FileContent> {
 
     let result = {} as FileContent;
 
-    let body = content;
+    result.messages = [] as ChatCompletionMessageParam[];
     if (data.include) {
         const includePaths = Array.isArray(data.include) ? data.include : [data.include];
         for (const includePath of includePaths) {
@@ -37,10 +38,10 @@ async function readFileContent(filePath: string): Promise<FileContent> {
                 throw `Error: Included file ${ fullPath } does not exist.`;
             }
             const includeContent = await readFileContent(fullPath);
-            body = includeContent.body + '\n' + body;
+            result.messages = result.messages.concat(includeContent.messages);
         }
     }
-    result.body = body;
+    result.messages.push({role: data.role || 'user', content: content} as ChatCompletionMessageParam);
 
     if (data.output) {
         const includePath = data.output;
@@ -54,9 +55,9 @@ async function readFileContent(filePath: string): Promise<FileContent> {
     return result;
 }
 
-async function callChatGPT(content: string, model: string): Promise<string> {
+async function callChatGPT(messages: ChatCompletionMessageParam[], model: string): Promise<string> {
     const completion = await openai.chat.completions.create({
-        messages: [{role: "system", content: content}],
+        messages: messages,
         model: model,
         seed: 0,
     });
@@ -90,7 +91,7 @@ function handleArgs(argv: string[]) {
 export async function main() {
     let {filePath, model, silent} = handleArgs(process.argv);
 
-    const {body, output} = await readFileContent(filePath);
+    const {messages, output} = await readFileContent(filePath);
 
     if (output) {
         const outputDir = path.dirname(output);
@@ -100,16 +101,24 @@ export async function main() {
     }
 
     if (!silent) {
-        console.log("PROMPT:\n--------------------\n" + body + "\n--------------------\n");
+        console.log("PROMPT:\n--------------------\n" + messages.map((message) => { return message.role + ": " + (message.content as string).trim() }).join("\n") + "\n--------------------\n");
     }
 
-    const result = await callChatGPT(body, model);
+    const result = await callChatGPT(messages, model);
 
     if (!silent) {
         console.log("RESULT:\n--------------------\n" + result + "\n--------------------");
     }
 
     if (output) {
-        fs.writeFileSync(output, result);
+        if (fs.existsSync(output) && !fs.statSync(output).isFile()) {
+            let fileCount = fs.readdirSync(output).length;
+            let filename = path.basename(filePath);
+            let iOutput = path.join(output, filename, (fileCount + 1).toString(), '.md');
+            fs.writeFileSync(iOutput, result);
+        }
+        else {
+            fs.writeFileSync(output, result);
+        }
     }
 }
