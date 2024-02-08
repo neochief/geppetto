@@ -37,7 +37,7 @@ async function readFileContent(filePath: string): Promise<FileContent> {
                 throw `Error: Included file ${ fullPath } does not exist.`;
             }
             const includeContent = await readFileContent(fullPath);
-            body = includeContent.body.trim() + '\n' + body;
+            body = includeContent.body + '\n' + body;
         }
     }
     result.body = body;
