@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/chatgpt-gg.iml" filepath="$PROJECT_DIR$/.idea/chatgpt-gg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/geppetto.iml" filepath="$PROJECT_DIR$/.idea/geppetto.iml" />
     </modules>
   </component>
 </project>
