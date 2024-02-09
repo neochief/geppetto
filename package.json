@@ -1,6 +1,6 @@
 {
   "name": "@neochief/geppetto",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "This tool let you use OpenAI's GPTs in a declarative way. Instead of endless chatting with GPT, you declare parts of your prompt, the context, the output location, the post-processing instructions in a set of files. Geppetto compiles these files into a single prompt and sends it to GPT, then saves the output in the specified location. When brainstorming, you can send multiple requests to GPT in a single run, receiving all the variations of answers for the same prompt.",
   "type": "commonjs",
   "main": "src/main.ts",
