@@ -1,11 +1,10 @@
 {
   "name": "geppetto",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "This tool let you use OpenAI's GPTs in a declarative way. Instead of endless chatting with GPT, you declare parts of your prompt, the context, the output location, the post-processing instructions in a set of files. Geppetto compiles these files into a single prompt and sends it to GPT, then saves the output in the specified location. When brainstorming, you can send multiple requests to GPT in a single run, receiving all the variations of answers for the same prompt.",
   "type": "commonjs",
   "bin": {
-    "gep": "./dist/bin/gep.js"
+    "gep": "dist/bin/gep.js"
   },
   "scripts": {
     "build": "node esbuild.config.js",
@@ -21,8 +20,8 @@
     "ext": "ts,js,json"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Alexander Shvets",
+  "license": "MIT",
   "dependencies": {
     "gray-matter": "^4.0.3",
     "openai": "^4.26.1"
@@ -31,5 +30,16 @@
     "@types/node": "^20.11.16",
     "esbuild": "^0.20.0",
     "nodemon": "^3.0.3"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:neochief/geppetto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/neochief/geppetto/issues"
+  },
+  "homepage": "https://github.com/neochief/geppetto#readme"
 }
