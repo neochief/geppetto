@@ -5,7 +5,7 @@ This tool let you use OpenAI's GPTs in a declarative way. Instead of endless cha
 ## Installation
 
 ```bash
-npm install -g geppetto
+npm install -g @neochief/geppetto
 ```
 
 ## Usage
