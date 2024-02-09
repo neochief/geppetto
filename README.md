@@ -38,7 +38,7 @@ role: system
 Imagine that you are Marcus Aurelius and you are writing a letter to your friend. You are in a good mood and you want to share your thoughts about the meaning of life.
 ```
 
-### 3. Run Geppetto
+### 3. Run Geppetto (with `gep` for convenience)
 
 ```bash
 gep prompt.md
