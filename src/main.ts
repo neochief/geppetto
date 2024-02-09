@@ -161,10 +161,11 @@ export async function main() {
 
     if (output) {
         if (fs.existsSync(output) && !fs.statSync(output).isFile()) {
-            let fileCount = fs.readdirSync(output).length - 1;
             let filename = path.basename(filePath, path.extname(filePath));
+            let dir = path.join(output, filename);
+            let fileCount = fs.readdirSync(dir).length - 1;
             for (let i = 0; i < results.length; i++) {
-                let iOutput = path.join(output, filename, (fileCount + i + 1).toString() + '.md');
+                let iOutput = path.join(dir, (fileCount + i + 1).toString() + '.md');
                 fs.writeFileSync(iOutput, results[i]);
             }
         } else {
