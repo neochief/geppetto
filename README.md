@@ -62,6 +62,14 @@ You can use different GPT models by specifying the `-m` option. The default is `
 gep prompt.md -m gpt-3-turbo
 ```
 
+### `-s`: Silent mode
+
+By default, Geppetto prints the full prompt and the results to the console. You can disable this behavior by using the `-s` option.
+
+```bash
+gep prompt.md -s
+```
+
 ## Prompt file options
 
 - `include`: array of sub-files to include before the main prompt. You can think of these as the chat messages (either your prompts or GPT replies, see `role`) that go prior to your main prompt. `include` and `role` options can be used in the sub-files as well.
