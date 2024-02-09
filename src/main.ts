@@ -4,12 +4,15 @@ import matter from 'gray-matter';
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam, ChatCompletionUserMessageParam } from "openai/resources";
 
-const openai = new OpenAI();
-
 type FileContent = {
     messages: ChatCompletionMessageParam[];
     output?: string;
 };
+
+
+function prepareAPI() {
+    return new OpenAI();
+}
 
 async function readFileContent(filePath: string, defaultRole = 'user'): Promise<FileContent> {
     if (!filePath) {
@@ -57,7 +60,7 @@ async function readFileContent(filePath: string, defaultRole = 'user'): Promise<
     return result;
 }
 
-async function callChatGPT(messages: ChatCompletionMessageParam[], model: string, times = 1): Promise<string[]> {
+async function callChatGPT(openai: OpenAI, messages: ChatCompletionMessageParam[], model: string, times = 1): Promise<string[]> {
     const promises = [];
     for (let i = 0; i < times; i++) {
         promises.push(openai.chat.completions.create({
@@ -117,7 +120,9 @@ function handleArgs(argv: string[]) {
 }
 
 export async function main() {
-    let {filePath, model, times, silent} = handleArgs(process.argv);
+    const openai = prepareAPI();
+
+    const {filePath, model, times, silent} = handleArgs(process.argv);
 
     const {messages, output} = await readFileContent(filePath);
 
@@ -139,18 +144,18 @@ export async function main() {
     if (!silent) {
         console.log("PROMPT:\n--------------------\n" + messages.map((message) => {
             return message.role + ": " + (message.content as string).trim()
-        }).join("\n") + "\n--------------------\n");
+        }).join("\n") + "\n--------------------");
     }
 
     if (times < 1) {
         return;
     }
 
-    const results = await callChatGPT(messages, model, times);
+    const results = await callChatGPT(openai, messages, model, times);
 
     if (!silent) {
         for (let i = 0; i < results.length; i++) {
-            console.log(`RESULT (${i + 1} / ${results.length}):\n--------------------\n" + ${results[i]} + "\n--------------------`);
+            console.log(`RESULT (${ i + 1 } / ${ results.length }):\n--------------------\n${ results[i] }\n--------------------`);
         }
     }
 
