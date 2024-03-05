@@ -34,16 +34,22 @@ async function readFileContent(filePath: string, defaultRole = 'user'): Promise<
 
     result.messages = [] as ChatCompletionMessageParam[];
     if (data.include) {
-        const includeStrings = Array.isArray(data.include) ? data.include : [data.include];
+        const includeStrings = (Array.isArray(data.include) ? data.include : [data.include]) as (string | { text: string, role?: string })[];
         for (const includeString of includeStrings) {
-            const [includePath, includeRole] = includeString.split(/ +as +/);
+            if (includeString && typeof includeString === 'object' && includeString.text) {
+                const includeContent = includeString?.text as string;
+                const includeRole = includeString?.role as string || defaultRole;
+                result.messages.push({role: includeRole, content: includeContent} as ChatCompletionMessageParam);
+            } else if (typeof includeString === 'string') {
+                const [includePath, includeRole] = includeString.split(/ +as +/);
 
-            const fullPath = path.join(path.dirname(filePath), includePath);
-            if (!fs.existsSync(fullPath)) {
-                throw `Error: Included file ${ fullPath } does not exist.`;
+                const fullPath = path.join(path.dirname(filePath), includePath);
+                if (!fs.existsSync(fullPath)) {
+                    throw `Error: Included file ${ fullPath } does not exist.`;
+                }
+                const includeContent = await readFileContent(fullPath, includeRole);
+                result.messages = result.messages.concat(includeContent.messages);
             }
-            const includeContent = await readFileContent(fullPath, includeRole);
-            result.messages = result.messages.concat(includeContent.messages);
         }
     }
     result.messages.push({role: data.role || defaultRole, content: content} as ChatCompletionMessageParam);
