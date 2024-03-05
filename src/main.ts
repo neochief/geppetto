@@ -28,7 +28,7 @@ async function readFileContent(filePath: string, defaultRole = 'user'): Promise<
     }
 
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    const {data, content} = matter(fileContent);
+    let {data, content} = matter(fileContent);
 
     let result = {} as FileContent;
 
@@ -52,7 +52,12 @@ async function readFileContent(filePath: string, defaultRole = 'user'): Promise<
             }
         }
     }
-    result.messages.push({role: data.role || defaultRole, content: content} as ChatCompletionMessageParam);
+
+    content = content.trim();
+
+    if (content) {
+        result.messages.push({role: defaultRole, content: content} as ChatCompletionUserMessageParam);
+    }
 
     if (data.output) {
         const includePath = data.output;
