@@ -22,21 +22,45 @@ A prompt file is a free form markdown file with a few optional sections that you
 **prompt.md**
 ```markdown
 ---
+messages:
+  - file: prompt_style.md
+  - text: Don't forget that you're a Roman Emperor.
+    role: system
 include:
-  - _style.md
+  - ps.md
 output: results
 ---
 
 What is the meaning of life?
 ```
 
-**_style.md**
+**ps.md**
+```markdown
+P.S. I'm writing from XXI century.
+```
+
+**prompt_style.md**
 ```markdown
 ---
 role: system
 ---
 Imagine that you are Marcus Aurelius and you are writing a letter to your friend. You are in a good mood and you want to share your thoughts about the meaning of life.
 ```
+
+This will result into a prompt consisting of two messages:
+
+```
+SYSTEM:
+Imagine that you are Marcus Aurelius and you are writing a letter to your friend. You are in a good mood and you want to share your thoughts about the meaning of life.
+
+SYSTEM:
+Don't forget that you're a Roman Emperor.
+
+USER:
+What is the meaning of life?
+
+P.S. I'm writing from XXI century.
+``` 
 
 ### 3. Run Geppetto (with `gep` for convenience)
 
@@ -53,6 +77,8 @@ You can run the same prompt multiple times using the `-t` option. If `output` is
 ```bash
 gep prompt.md -t 10
 ```
+
+Tip: If you pass `-t 0`, you can see the prompt without wasting API calls.
 
 ### `-m`: GPT model to use
 
@@ -72,9 +98,19 @@ gep prompt.md -s
 
 ## Prompt file options
 
-- `include`: array of sub-files to include before the main prompt. You can think of these as the chat messages (either your prompts or GPT replies, see `role`) that go prior to your main prompt. `include` and `role` options can be used in the sub-files as well.
-- `role`: this options specifies the type of the message (see `messages` in [API reference](https://platform.openai.com/docs/api-reference/chat)). Typically, a conversation is formatted with a `system` message first, followed by alternating `user` and `assistant` messages. Available values:
+- `text`: text string that will be used as message.
+- `include`: array of path names to a files that will used as part of message. If the `text` is passed, the result of include is added after.
+- `includeSeparator`: a string separator that will be used to join items passed in `include`. By default, the separator is "\n\n";
+- `role`: the default role that will be used for send all the messages (can be overridden in the message sub-files). This options specifies the type of the message (see `messages` in [API reference](https://platform.openai.com/docs/api-reference/chat)). Typically, a conversation is formatted with a `system` message first, followed by alternating `user` and `assistant` messages. Available values:
   - `user` (default): your prompt
   - `assistant`: GPT's reply
   - `system`: Prompt configuration
-- `output`: the output file or directory where the results will be saved. If it's a directory, the results will be saved as separate files in the directory. If it's a file, the results will be saved in the file. If it's not defined, the results will be printed to the console.
+
+- `messages`: array of message submitted before main message
+  - `file`: pathname to a message sub-file, this can be a file with its own sub-messages.
+  - `text`: same as above
+  - `include`: same as above
+  - `includeSeparator`: same as above
+  - `role`: same as above
+
+- `output`: the output directory where the results will be saved. The results will be saved in a new sub-folder each time the script is launched. This sub-folder will also include a file with the prompt. This helps to iterate the changes to the source files, while having the original prompt close to the results. If this option is not defined, the results will only be printed to the console.
