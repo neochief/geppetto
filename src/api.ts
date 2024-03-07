@@ -95,7 +95,7 @@ class AnthropicClient implements APIClient {
                     messages: anthropicMessages,
                     model: model,
                 }, {
-                    maxRetries: 5,
+                    maxRetries: 10,
                 }).then((response) => {
                     resolve(response.content[0].text);
                 }).catch((error) => {

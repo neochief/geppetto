@@ -11,7 +11,7 @@ export async function main() {
 
     const {messages, output} = await extractMessagesFromFile(filePath);
 
-    const {outputDir, outputPromptFile} = prepareOutputDir(output);
+    const {outputDir, outputPromptFile} = prepareOutputDir(output, model);
 
     await printPrompt(messages, outputPromptFile, silent, dryRun)
 

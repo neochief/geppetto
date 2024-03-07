@@ -3,7 +3,7 @@ import path from "path";
 import colors from "colors/safe";
 import { ApiResult } from "./types";
 
-export function prepareOutputDir(output: string): { outputDir?: string, outputPromptFile?: string } {
+export function prepareOutputDir(output: string, model: string): { outputDir?: string, outputPromptFile?: string } {
     if (output) {
         if (fs.existsSync(output) && fs.lstatSync(output).isFile()) {
             throw "The output option (" + output + ") is a file. A directory expected."
@@ -13,7 +13,7 @@ export function prepareOutputDir(output: string): { outputDir?: string, outputPr
         }
 
         let dirCount = fs.readdirSync(output).length;
-        const outputDir = path.join(output, (dirCount + 1).toString());
+        const outputDir = path.join(output, (dirCount + 1).toString() + '-' + model);
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, {recursive: true});
         }
