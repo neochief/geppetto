@@ -111,7 +111,7 @@ class AnthropicClient implements APIClient {
                     if (this.retriesWhenHitRateLimit > 0 && attempt < this.retriesWhenHitRateLimit) {
                         return (error) => {
                             if (error && ([408, 409, 429].includes(error.status) || error.status >= 500)) {
-                                console.log(`Worker's #${ i + 1 } attempt ${ attempt + 1 } failed. Retrying in ${ this.retryInterval }ms...`);
+                                console.log(`Worker's #${ i + 1 } attempt ${ attempt + 1 } failed (server returned ${ error.status } error). Retrying in ${ this.retryInterval }ms...`);
                                 setTimeout(() => {
                                     call().then(then).catch(catchFn(attempt + 1));
                                 }, this.retryInterval);

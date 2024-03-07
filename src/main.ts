@@ -19,7 +19,7 @@ export async function main() {
         return;
     }
 
-    console.log(colors.bgGreen(`\n# Connecting to AI using model: ${ model }\nExpect results in: ${outputDir}` + "\n--------------------"));
+    console.log(colors.bgGreen(`\n# Connecting to API using model: ${ model }\nExpect results in: ${outputDir}` + "\n--------------------"));
 
     const apiPromises = api.call(messages, model, times);
     const otherPromises = [] as Promise<any>[];
