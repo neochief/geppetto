@@ -3,7 +3,7 @@ messages:
   - text: Add the exclamation mark to the end of the result.
     role: system
   - file: _test-include.md
-    role: assistant
+    role: system
 text: And lastly,
 includeSeparator: " "
 include: 

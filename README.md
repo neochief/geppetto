@@ -1,6 +1,6 @@
 # Geppetto: AI automation tool
 
-This tool let you use OpenAI's GPTs in a declarative way. Instead of endless chatting with GPT, you declare parts of your prompt, the context, the output location, the post-processing instructions in a set of files. Geppetto compiles these files into a single prompt and sends it to GPT, then saves the output in the specified location. When brainstorming, you can send multiple requests to GPT in a single run, receiving all the variations of answers for the same prompt.
+This tool let you use OpenAI's and Anthropic's LLMs in a declarative way. Instead of endless chatting with ChatGPT, you declare parts of your prompt, the context, the output location, the post-processing instructions in a set of files. Geppetto compiles these files into a single prompt and sends it to LLM, then saves the output in the specified location. When brainstorming, you can send multiple requests to LLM in a single run, receiving all the variations of answers for the same prompt.
 
 ## Installation
 
@@ -72,25 +72,35 @@ gep prompt.md
 
 ### `-t`: Times to run
 
-You can run the same prompt multiple times using the `-t` option. If `output` is defined in the prompt file, and it's a directory, the results will be saved as a separate files in the outut directory. This option is useful while brainstorming: usually GPT produces slightly different results each time you run the prompt, so you can run once with `-t` and then pick the best result.
+You can run the same prompt multiple times using the `-t` option. If `output` is defined in the prompt file, and it's a directory, the results will be saved as a separate files in the outut directory. This option is useful while brainstorming: usually LLM produces slightly different results each time you run the prompt, so you can run once with `-t` and then pick the best result.
 
 ```bash
 gep prompt.md -t 10
 ```
 
-Tip: If you pass `-t 0`, you can see the prompt without wasting API calls.
+### `-m`: LLM model to use
 
-### `-m`: GPT model to use
-
-You can use different GPT models by specifying the `-m` option. The default is `gpt-4-turbo-preview`.
+You can use different LLM models by specifying the `-m` option. The default is `gpt-4-turbo-preview`.
 
 ```bash
-gep prompt.md -m gpt-3-turbo
+gep prompt.md -m gpt-3.5-turbo
 ```
+
+Available models: 
+
+- gpt-4-turbo-preview
+- gpt-4
+- gpt-3.5-turbo
+- claude-3-opus-20240229
+- claude-3-sonnet-20240229
 
 ### `-s`: Silent mode
 
 By default, Geppetto prints the full prompt and the results to the console. You can disable this behavior by using the `-s` option.
+
+### `--dry-run`: Dry run
+
+Do not send the prompt to LLM, just print the prompt to the console.
 
 ```bash
 gep prompt.md -s
@@ -103,7 +113,7 @@ gep prompt.md -s
 - `includeSeparator`: a string separator that will be used to join items passed in `include`. By default, the separator is "\n\n";
 - `role`: the default role that will be used for send all the messages (can be overridden in the message sub-files). This options specifies the type of the message (see `messages` in [API reference](https://platform.openai.com/docs/api-reference/chat)). Typically, a conversation is formatted with a `system` message first, followed by alternating `user` and `assistant` messages. Available values:
   - `user` (default): your prompt
-  - `assistant`: GPT's reply
+  - `assistant`: LLM's reply
   - `system`: Prompt configuration
 
 - `messages`: array of message submitted before main message
