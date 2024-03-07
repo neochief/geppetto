@@ -19,6 +19,8 @@ export async function main() {
         return;
     }
 
+    console.log(colors.bgGreen(`\n# Connecting to AI using model: ${ model }` + "\n--------------------"));
+
     const apiPromises = api.call(messages, model, times);
     const otherPromises = [] as Promise<any>[];
     const apiErrors = [];
@@ -32,10 +34,14 @@ export async function main() {
 
     await Promise.allSettled(apiPromises).then(() => {
         if (!silent) {
-            if (!apiErrors.length) {
-                console.log((colors.bgGreen("Done!")));
-            } else {
-                console.error(colors.bgRed(`Failed to complete ${ apiErrors.length } of ${ times } requests:`));
+            const successes = times - apiErrors.length;
+
+            if (successes) {
+                console.log((colors.bgGreen(`\nDone! (${ successes } of ${ times })`)));
+            }
+
+            if (apiErrors.length) {
+                console.error(colors.bgRed(`\nFailed to complete ${ apiErrors.length } of ${ times } requests:`));
                 console.error(colors.bgRed(apiErrors.join("\n")));
             }
         }

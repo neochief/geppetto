@@ -26,15 +26,13 @@ export function prepareOutputDir(output: string): { outputDir?: string, outputPr
 
 export function printPrompt(messages, outputPromptFile, silent = false, dryRun = false) {
     if (!silent) {
-        console.log(colors.bgBlue("# PROMPT" + (outputPromptFile ? " (" + outputPromptFile + ")" : "") + "\n--------------------"));
+        console.log(colors.bgBlue("# PROMPT" + (outputPromptFile ? " " + outputPromptFile + "" : "") + "\n--------------------"));
 
         messages.map((message, index) => {
             const colorFunc = index % 2 === 0 ? colors.blue : colors.cyan;
             console.log(colorFunc(message.role.toUpperCase() + ":"));
             console.log(colorFunc((message.content as string).trim() + (index < messages.length - 1 ? "\n" : "")));
         });
-
-        console.log(colors.bgBlue("--------------------\n"));
     }
 
     if (outputPromptFile && !dryRun) {
@@ -51,9 +49,9 @@ export function printAndSaveResult(result: ApiResult, index: number, times: numb
     const outputResultFile = outputDir ? path.join(outputDir, (index + 1).toString() + '.md') : undefined;
 
     if (!silent) {
-        const destinationText = outputResultFile ? " (" + outputResultFile + ")" : "";
+        const destinationText = outputResultFile ? " " + outputResultFile : "";
         const colorFunc = index % 2 === 0 ? colors.green : colors.yellow;
-        console.log(colorFunc(`RESULT (${ index + 1 } / ${ times })${ destinationText }:\n--------------------\n${ result }\n--------------------`));
+        console.log(colorFunc(`\nRESULT (${ index + 1 } / ${ times })${ destinationText }\n--------------------\n${ result }\n--------------------`));
     }
 
     if (outputResultFile) {

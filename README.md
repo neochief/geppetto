@@ -94,6 +94,8 @@ Available models:
 - claude-3-opus-20240229
 - claude-3-sonnet-20240229
 
+Instead of passing the `-m` paramter, you can also use shorthands `--gpt` or `--claude` for selecting the best models from the respective families.
+
 ### `-s`: Silent mode
 
 By default, Geppetto prints the full prompt and the results to the console. You can disable this behavior by using the `-s` option.
