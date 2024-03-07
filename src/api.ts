@@ -110,7 +110,7 @@ class AnthropicClient implements APIClient {
                 let catchFn = (attempt: number) => {
                     if (this.retriesWhenHitRateLimit > 0 && attempt < this.retriesWhenHitRateLimit) {
                         return (error) => {
-                            if (error && [408, 409, 429].includes(error.status) && error.status >= 500) {
+                            if (error && ([408, 409, 429].includes(error.status) || error.status >= 500)) {
                                 console.log(`Worker's #${ i } attempt ${ attempt } failed. Retrying in ${ this.retryInterval }ms...`);
                                 setTimeout(() => {
                                     call().then(then).catch(catchFn(attempt + 1));
