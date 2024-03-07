@@ -91,7 +91,7 @@ class AnthropicClient implements APIClient {
 
             promises.push(new Promise((resolve, reject) => {
                 this.client.messages.create({
-                    max_tokens: 1024,
+                    max_tokens: 102400,
                     messages: anthropicMessages,
                     model: model,
                 }, {
