@@ -18,7 +18,7 @@ export function prepareOutputDir(output: string): { outputDir?: string, outputPr
             fs.mkdirSync(outputDir, {recursive: true});
         }
 
-        const outputPromptFile = path.join(output, '_prompt.md');
+        const outputPromptFile = path.join(outputDir, '_prompt.md');
 
         return {outputDir, outputPromptFile};
     }
