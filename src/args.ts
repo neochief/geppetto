@@ -5,11 +5,12 @@ export function handleArgs(argv: string[]) {
 
     const filePath = argv[2];
     if (!filePath || filePath === '-h' || filePath === '--help' || filePath === 'help' || filePath.startsWith('-')) {
-        throw `Usage: gep <filename>
+        console.log(`Usage: gep <filename>
 [-m <model>]: Available models: ${ supportedModels.join(', ') } (default: ${ defaultModel })
 [-t <times>]: Number of times to run (default: ${ defaultTimes })
 [-s]: Don't print the prompt and results
-[--dry-run]: Don't print the prompt and results`;
+[--dry-run]: Don't print the prompt and results`);
+        process.exit(1);
     }
 
     const modelIndex = argv.indexOf('-m');
