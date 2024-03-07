@@ -62,6 +62,8 @@ class OpenaiClient implements APIClient {
 
 class AnthropicClient implements APIClient {
     private client: Anthropic;
+    private retriesWhenHitRateLimit = 10;
+    private retryInterval = 1000;
 
     constructor() {
         this.client = new Anthropic();
@@ -90,17 +92,41 @@ class AnthropicClient implements APIClient {
             const anthropicMessages = messagesWithConsequentUserMessagesSquashed as MessageParam[];
 
             promises.push(new Promise((resolve, reject) => {
-                this.client.messages.create({
-                    max_tokens: 4096,
-                    messages: anthropicMessages,
-                    model: model,
-                }, {
-                    maxRetries: 10,
-                }).then((response) => {
+
+                let call = () => {
+                    return this.client.messages.create({
+                            max_tokens: 4096,
+                            messages: anthropicMessages,
+                            model: model,
+                        },
+                        // We do our own retries, because default ones don't wait between retries.
+                        {maxRetries: 0});
+                };
+
+                let then = (response) => {
                     resolve(response.content[0].text);
-                }).catch((error) => {
-                    reject(error);
-                });
+                };
+
+                let catchFn = (attempt: number) => {
+                    if (this.retriesWhenHitRateLimit > 0 && attempt < this.retriesWhenHitRateLimit) {
+                        return (error) => {
+                            if (error && [408, 409, 429].includes(error.status) && error.status >= 500) {
+                                console.log(`Worker's #${ i } attempt ${ attempt } failed. Retrying in ${ this.retryInterval }ms...`);
+                                setTimeout(() => {
+                                    call().then(then).catch(catchFn(attempt + 1));
+                                }, this.retryInterval);
+                            } else {
+                                reject(error);
+                            }
+                        };
+                    } else {
+                        return (error) => {
+                            reject(error);
+                        };
+                    }
+                }
+
+                call().then(then).catch(catchFn(0));
             }));
         }
         return promises;
