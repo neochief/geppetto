@@ -13,7 +13,7 @@ export function prepareOutputDir(output: string, model: string): { outputDir?: s
         }
 
         let dirCount = fs.readdirSync(output).length;
-        const outputDir = path.join(output, (dirCount + 1).toString() + '-' + model);
+        const outputDir = path.join(output, (dirCount + 1).toString() + '__' + model);
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, {recursive: true});
         }
