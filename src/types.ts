@@ -1,9 +1,16 @@
 export type FileResult = {
     messages: APIMessages;
     output?: string;
+    outputAsFiles?: boolean;
 };
 
-export type MessageConfig = (MessageFileConfig | MessageTextConfig | MessageIncludeConfig) & { messages: MessageConfig[] };
+export type FileMessageConfig = {
+    messages: MessageConfig[];
+    output?: string;
+    outputAsFiles?: boolean;
+}
+
+export type MessageConfig = MessageFileConfig | MessageTextConfig | MessageIncludeConfig;
 
 export type MessageFileConfig = {
     file: string,
@@ -15,8 +22,9 @@ export type MessageTextConfig = {
 } & Partial<MessageIncludeConfig>;
 
 export type MessageIncludeConfig = {
-    include: (string | { file: string })[],
-    includeSeparator?: string,
+    include: string[],
+    separator?: string,
+    asFiles?: boolean,
     role?: string,
 }
 

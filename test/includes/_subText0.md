@@ -1,0 +1,1 @@
+Print first verse from Hamlet.

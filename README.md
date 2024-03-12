@@ -112,7 +112,8 @@ gep prompt.md -s
 
 - `text`: text string that will be used as message.
 - `include`: array of path names to a files that will used as part of message. If the `text` is passed, the result of include is added after.
-- `includeSeparator`: a string separator that will be used to join items passed in `include`. By default, the separator is "\n\n";
+- `separator`: a string separator that will be used to join items passed in `include`. By default, the separator is "\n\n";
+- `asFiles`: if true, each include will be wrapped in a special template that also includes the file name and the file path. This is useful when the exact files are important for the context. It's useful with conjunction with `outputAsFiles` option.
 - `role`: the default role that will be used for send all the messages (can be overridden in the message sub-files). This options specifies the type of the message (see `messages` in [API reference](https://platform.openai.com/docs/api-reference/chat)). Typically, a conversation is formatted with a `system` message first, followed by alternating `user` and `assistant` messages. Available values:
   - `user` (default): your prompt
   - `assistant`: LLM's reply
@@ -122,7 +123,8 @@ gep prompt.md -s
   - `file`: pathname to a message sub-file, this can be a file with its own sub-messages.
   - `text`: same as above
   - `include`: same as above
-  - `includeSeparator`: same as above
+  - `separator`: same as above
   - `role`: same as above
 
 - `output`: the output directory where the results will be saved. The results will be saved in a new sub-folder each time the script is launched. This sub-folder will also include a file with the prompt. This helps to iterate the changes to the source files, while having the original prompt close to the results. If this option is not defined, the results will only be printed to the console.
+- `outputAsFiles`

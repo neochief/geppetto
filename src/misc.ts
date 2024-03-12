@@ -45,16 +45,56 @@ export function printPrompt(messages, outputPromptFile, silent = false, dryRun =
     }
 }
 
-export function printAndSaveResult(result: ApiResult, index: number, times: number, outputDir: string, silent: boolean) {
+export function printAndSaveResult(result: ApiResult, index: number, times: number, outputDir: string, outputAsFiles: boolean, silent: boolean) {
+    const promises = [];
+    const resultFiles = [];
+    if (outputAsFiles && result.includes('= File:')) {
+        const fileBlockPattern = /= File: (.*?) =+\n([\s\S]*?)\n= End of file: \1 =+/g;
+        const matches = result.matchAll(fileBlockPattern);
+
+        for (const match of matches) {
+            const filename = match[1];
+            const content = match[2];
+
+            const absoluteOutputDir = path.resolve(outputDir, (index + 1).toString());
+            let absoluteFilename = path.resolve(outputDir, filename);
+            let relativePath = path.relative(absoluteOutputDir, absoluteFilename);
+            if (relativePath.startsWith('..')) {
+                relativePath = relativePath.replace(/^(\.\.[/\\])+/, '');
+            }
+            const outputPath = path.join(absoluteOutputDir, relativePath);
+
+            promises.push(new Promise<void>((resolve, reject) => {
+                fs.promises.mkdir(path.dirname(outputPath), {recursive: true})
+                    .then(() => {
+                        fs.promises.writeFile(outputPath, content)
+                            .then(() => {
+                                resolve();
+                            })
+                            .catch(reject);
+                    })
+                    .catch(reject);
+            }));
+
+            resultFiles.push(outputPath);
+        }
+    }
+
     const outputResultFile = outputDir ? path.join(outputDir, (index + 1).toString() + '.md') : undefined;
 
     if (!silent) {
         const destinationText = outputResultFile ? " " + outputResultFile : "";
         const colorFunc = index % 2 === 0 ? colors.green : colors.yellow;
-        console.log(colorFunc(`\nRESULT (${ index + 1 } / ${ times })${ destinationText }\n--------------------\n${ result }\n--------------------`));
+        console.log(colorFunc(`\nRESULT (${ index + 1 } / ${ times })${ destinationText }`));
+        if (resultFiles.length) {
+            console.log(colorFunc(`Result chunks saved in sub files:\n${ resultFiles.join("\n") }`));
+        }
+        console.log(colorFunc(`--------------------\n${ result }\n--------------------`));
     }
 
     if (outputResultFile) {
-        return fs.promises.writeFile(outputResultFile, result);
+        promises.push(fs.promises.writeFile(outputResultFile, result));
     }
+
+    return Promise.all(promises);
 }

@@ -5,11 +5,11 @@ import { initializeApi } from "./api";
 import { prepareOutputDir, printAndSaveResult, printPrompt } from "./misc";
 
 export async function main() {
-    const {filePath, model, times, silent, dryRun} = handleArgs(process.argv);
+    const {filename, model, times, silent, dryRun} = handleArgs();
 
     const api = initializeApi(model);
 
-    const {messages, output} = await extractMessagesFromFile(filePath);
+    const {messages, output, outputAsFiles} = await extractMessagesFromFile(filename);
 
     const {outputDir, outputPromptFile} = prepareOutputDir(output, model);
 
@@ -26,7 +26,7 @@ export async function main() {
     const apiErrors = [];
     apiPromises.forEach((promise, index) => {
         promise.then((result) => {
-            otherPromises.push(printAndSaveResult(result, index, times, outputDir, silent));
+            otherPromises.push(printAndSaveResult(result, index, times, outputDir, outputAsFiles, silent));
         }, (e) => {
             apiErrors.push(e.message);
         });
