@@ -2,31 +2,45 @@ import colors from 'colors/safe';
 import { extractMessagesFromFile } from "./parser";
 import { handleArgs } from "./args";
 import { initializeApi } from "./api";
-import { prepareOutputDir, printAndSaveResult, printPrompt } from "./misc";
+import { getOutputDir, prepareOutputDir, printAndSaveResult, printPrompt, writePrompt } from "./misc";
 
 export async function main() {
-    const {filename, model, times, silent, dryRun} = handleArgs();
+    let {filename, model, times, silent, dryRun} = handleArgs();
 
     const api = initializeApi(model);
 
-    const {messages, output, outputAsFiles} = await extractMessagesFromFile(filename);
+    let {messages, baseDir, outputDir, outputVersioned, outputAsFiles} = await extractMessagesFromFile(filename);
 
-    const {outputDir, outputPromptFile} = prepareOutputDir(output, model);
+    let outputPromptFile: string;
+    const result = getOutputDir(baseDir, outputDir, outputVersioned, model);
+    if (result) {
+        outputDir = result.outputDir;
+        outputPromptFile = result.outputPromptFile;
+    }
 
-    await printPrompt(messages, outputPromptFile, silent, dryRun)
+    printPrompt(messages, outputPromptFile, silent, dryRun);
+
+    if (!outputVersioned) {
+        times = 1;
+    }
 
     if (dryRun) {
+        console.log(colors.bgGreen(`\n# Dry run. No API calls will be made.\nExpect results in: ${ outputDir }` + "\n--------------------"));
         return;
     }
 
-    console.log(colors.bgGreen(`\n# Connecting to API using model: ${ model }\nExpect results in: ${outputDir}` + "\n--------------------"));
+    prepareOutputDir(outputDir, outputPromptFile);
+
+    writePrompt(messages, outputPromptFile, silent, dryRun)
+
+    console.log(colors.bgGreen(`\n# Connecting to API using model: ${ model }\nExpect results in: ${ outputDir }` + "\n--------------------"));
 
     const apiPromises = api.call(messages, model, times);
     const otherPromises = [] as Promise<any>[];
     const apiErrors = [];
     apiPromises.forEach((promise, index) => {
         promise.then((result) => {
-            otherPromises.push(printAndSaveResult(result, index, times, outputDir, outputAsFiles, silent));
+            otherPromises.push(printAndSaveResult(result, index, times, outputDir, outputVersioned, outputAsFiles, silent));
         }, (e) => {
             apiErrors.push(e.message);
         });

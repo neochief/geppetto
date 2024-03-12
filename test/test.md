@@ -12,7 +12,7 @@ messages:
     - includes/_subText1.md
     - includes/_subText2.md
       
-output: results
+outputDir: .
+outputVersioned: false
 outputAsFiles: true
 ---
-

@@ -3,20 +3,23 @@ import path from "path";
 import colors from "colors/safe";
 import { ApiResult } from "./types";
 
-export function prepareOutputDir(output: string, model: string): { outputDir?: string, outputPromptFile?: string } {
-    if (output) {
-        if (fs.existsSync(output) && fs.lstatSync(output).isFile()) {
-            throw "The output option (" + output + ") is a file. A directory expected."
-        }
-        if (!fs.existsSync(output)) {
-            fs.mkdirSync(output, {recursive: true});
-        }
+export function getOutputDir(baseDir: string, outputDir: string, outputVersioned: boolean, model: string): { outputDir: string, outputPromptFile: string } | void {
+    if (fs.existsSync(outputDir) && fs.lstatSync(outputDir).isFile()) {
+        throw "The output option (" + outputDir + ") is a file. A directory expected."
+    }
 
-        let dirCount = fs.readdirSync(output).length;
-        const outputDir = path.join(output, (dirCount + 1).toString() + '__' + model);
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, {recursive: true});
-        }
+    // if (!fs.existsSync(outputDir)) {
+    //     fs.mkdirSync(outputDir, {recursive: true});
+    // }
+
+    if (outputVersioned) {
+        let dirCount = fs.existsSync(outputDir) ? fs.readdirSync(outputDir).length : 0;
+
+        outputDir = path.join(outputDir, (dirCount + 1).toString() + '__' + model);
+
+        // if (!fs.existsSync(outputDir)) {
+        //     fs.mkdirSync(outputDir, {recursive: true});
+        // }
 
         const outputPromptFile = path.join(outputDir, '_prompt.md');
 
@@ -24,7 +27,16 @@ export function prepareOutputDir(output: string, model: string): { outputDir?: s
     }
 }
 
-export function printPrompt(messages, outputPromptFile, silent = false, dryRun = false) {
+export function prepareOutputDir(outputDir: string, outputPromptFile: string) {
+    if (outputDir && !fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, {recursive: true});
+    }
+    if (outputPromptFile && !fs.existsSync(path.dirname(outputPromptFile))) {
+        fs.mkdirSync(path.dirname(outputPromptFile), {recursive: true});
+    }
+}
+
+export function printPrompt(messages, outputPromptFile: string, silent = false, dryRun = false) {
     if (!silent) {
         console.log(colors.bgBlue("# PROMPT" + (outputPromptFile ? " " + outputPromptFile + "" : "") + "\n--------------------"));
 
@@ -34,18 +46,20 @@ export function printPrompt(messages, outputPromptFile, silent = false, dryRun =
             console.log(colorFunc((message.content as string).trim() + (index < messages.length - 1 ? "\n" : "")));
         });
     }
+}
 
+export function writePrompt(messages, outputPromptFile: string, silent = false, dryRun = false) {
     if (outputPromptFile && !dryRun) {
         let prompt = '';
         messages.forEach((message, index) => {
             prompt += message.role.toUpperCase() + ":\n"
             prompt += (message.content as string).trim() + (index < messages.length - 1 ? "\n\n" : "");
         })
-        return fs.promises.writeFile(outputPromptFile, prompt)
+        fs.writeFileSync(outputPromptFile, prompt)
     }
 }
 
-export function printAndSaveResult(result: ApiResult, index: number, times: number, outputDir: string, outputAsFiles: boolean, silent: boolean) {
+export function printAndSaveResult(result: ApiResult, index: number, times: number, outputDir: string, outputVersioned:boolean, outputAsFiles: boolean, silent: boolean) {
     const promises = [];
     const resultFiles = [];
     if (outputAsFiles && result.includes('= File:')) {
@@ -56,7 +70,7 @@ export function printAndSaveResult(result: ApiResult, index: number, times: numb
             const filename = match[1];
             const content = match[2];
 
-            const absoluteOutputDir = path.resolve(outputDir, (index + 1).toString());
+            const absoluteOutputDir = outputVersioned ? path.resolve(outputDir, (index + 1).toString()) : outputDir;
             let absoluteFilename = path.resolve(outputDir, filename);
             let relativePath = path.relative(absoluteOutputDir, absoluteFilename);
             if (relativePath.startsWith('..')) {
@@ -80,7 +94,7 @@ export function printAndSaveResult(result: ApiResult, index: number, times: numb
         }
     }
 
-    const outputResultFile = outputDir ? path.join(outputDir, (index + 1).toString() + '.md') : undefined;
+    const outputResultFile = outputDir ? (path.join(outputDir, (outputVersioned ? (index + 1).toString() : 'result') + '.md')) : undefined;
 
     if (!silent) {
         const destinationText = outputResultFile ? " " + outputResultFile : "";

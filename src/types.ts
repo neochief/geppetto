@@ -1,13 +1,17 @@
 export type FileResult = {
     messages: APIMessages;
-    output?: string;
+    baseDir?: string;
+    outputDir?: string;
+    outputVersioned?: boolean;
     outputAsFiles?: boolean;
 };
 
 export type FileMessageConfig = {
     messages: MessageConfig[];
-    output?: string;
+    baseDir?: string;
+    outputDir?: string;
     outputAsFiles?: boolean;
+    outputVersioned?: boolean;
 }
 
 export type MessageConfig = MessageFileConfig | MessageTextConfig | MessageIncludeConfig;
