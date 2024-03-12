@@ -62,6 +62,8 @@ export function writePrompt(messages, outputPromptFile: string, silent = false, 
 export function printAndSaveResult(result: ApiResult, index: number, times: number, outputDir: string, outputVersioned:boolean, outputAsFiles: boolean, silent: boolean) {
     const promises = [];
     const resultFiles = [];
+    let outputResultFile;
+
     if (outputAsFiles && result.includes('= File:')) {
         const fileBlockPattern = /= File: (.*?) =+\n([\s\S]*?)\n= End of file: \1 =+/g;
         const matches = result.matchAll(fileBlockPattern);
@@ -93,8 +95,12 @@ export function printAndSaveResult(result: ApiResult, index: number, times: numb
             resultFiles.push(outputPath);
         }
     }
-
-    const outputResultFile = outputDir ? (path.join(outputDir, (outputVersioned ? (index + 1).toString() : 'result') + '.md')) : undefined;
+    else {
+        outputResultFile = outputDir ? (path.join(outputDir, (outputVersioned ? (index + 1).toString() : 'result') + '.md')) : undefined;
+        if (outputResultFile) {
+            promises.push(fs.promises.writeFile(outputResultFile, result));
+        }
+    }
 
     if (!silent) {
         const destinationText = outputResultFile ? " " + outputResultFile : "";
@@ -104,10 +110,6 @@ export function printAndSaveResult(result: ApiResult, index: number, times: numb
             console.log(colorFunc(`Result chunks saved in sub files:\n${ resultFiles.join("\n") }`));
         }
         console.log(colorFunc(`--------------------\n${ result }\n--------------------`));
-    }
-
-    if (outputResultFile) {
-        promises.push(fs.promises.writeFile(outputResultFile, result));
     }
 
     return Promise.all(promises);

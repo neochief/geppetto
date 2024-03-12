@@ -127,4 +127,5 @@ gep prompt.md -s
   - `role`: same as above
 
 - `output`: the output directory where the results will be saved. The results will be saved in a new sub-folder each time the script is launched. This sub-folder will also include a file with the prompt. This helps to iterate the changes to the source files, while having the original prompt close to the results. If this option is not defined, the results will only be printed to the console.
-- `outputAsFiles`
+- `outputAsFiles`: if `true`, the results will be saved as separate files in the output directory. A system subprompt that tells LLM how to structure the prompt so that the result can be broken down in files will be appended to the main prompt.
+- `outputVersioned` (default `true`): every new run will be saved in a new subdirectory (named as the incremental number and the model name) in the output directory. If `false`, the result will be saved in the output directory directly. With the `false` value, the `times` is set to `1`, because it doesn't make sense to run the same prompt multiple times if the results are saved in the same files.

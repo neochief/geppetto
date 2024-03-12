@@ -35,18 +35,18 @@ export function handleArgs(): Args {
     program.parse(process.argv);
 
     const options: Options = program.opts();
-    let model = options.model;
+
+    let model;
+
+    if (options.gpt) {
+        model = allSupportedModels.openai[0];
+    } else if (options.claude) {
+        model = allSupportedModels.anthropic[0];
+    } else {
+        model = options.model;
+    }
     if (model && !supportedModels.includes(model)) {
         throw `Error: Model ${ model } is not supported. Please use one of the following models: ${ supportedModels.join(', ') }`;
-    }
-    if (!model) {
-        if (options.gpt) {
-            model = allSupportedModels.openai[0];
-        } else if (options.claude) {
-            model = allSupportedModels.anthropic[0];
-        } else {
-            model = defaultModel;
-        }
     }
 
     let times = Number(options.times);
