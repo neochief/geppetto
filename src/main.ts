@@ -9,7 +9,7 @@ export async function main() {
 
     const api = initializeApi(model);
 
-    let {messages, baseDir, outputDir, outputVersioned, outputAsFiles} = await extractMessagesFromFile(filename);
+    let {messages, baseDir, outputDir, outputVersioned, outputAsFiles, editInPlace} = await extractMessagesFromFile(filename);
 
     let outputPromptFile: string;
     const result = getOutputDir(baseDir, outputDir, outputVersioned, model);
@@ -40,7 +40,7 @@ export async function main() {
     const apiErrors = [];
     apiPromises.forEach((promise, index) => {
         promise.then((result) => {
-            otherPromises.push(printAndSaveResult(result, index, times, outputDir, outputVersioned, outputAsFiles, silent));
+            otherPromises.push(printAndSaveResult(result, index, times, outputDir, outputVersioned, outputAsFiles, editInPlace, silent));
         }, (e) => {
             apiErrors.push(e.message);
         });

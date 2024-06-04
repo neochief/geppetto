@@ -13,7 +13,7 @@
     "postbuild": "chmod +x dist/bin/gep.js",
     "test-dry": "node dist/bin/gep.js test/test.md --dry-run",
     "test-gpt": "node dist/bin/gep.js test/test.md -t 1 --gpt",
-    "test-editing-gpt": "node dist/bin/gep.js test/testEditing.md -t 1 --gpt",
+    "test-editing-gpt": "node dist/bin/gep.js test/test/testEditing.md -t 1 --gpt",
     "test-claude": "node dist/bin/gep.js test/test.md -t 1 --claude"
   },
   "nodemonConfig": {

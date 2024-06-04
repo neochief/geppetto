@@ -4,6 +4,7 @@ export type FileResult = {
     outputDir?: string;
     outputVersioned?: boolean;
     outputAsFiles?: boolean;
+    editInPlace?: boolean;
 };
 
 export type FileMessageConfig = {

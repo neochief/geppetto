@@ -84,6 +84,7 @@ export async function extractMessagesFromFile(filename: string, roleOverride?, i
             ...result.messages];
         result.outputAsFiles = true;
         result.outputVersioned = false;
+        result.editInPlace = true;
 
     } else if (result.outputAsFiles !== undefined) {
 

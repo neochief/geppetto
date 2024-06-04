@@ -59,7 +59,7 @@ export function writePrompt(messages, outputPromptFile: string, silent = false, 
     }
 }
 
-export function printAndSaveResult(result: ApiResult, index: number, times: number, outputDir: string, outputVersioned:boolean, outputAsFiles: boolean, silent: boolean) {
+export function printAndSaveResult(result: ApiResult, index: number, times: number, outputDir: string, outputVersioned:boolean, outputAsFiles: boolean, editInPlace: boolean, silent: boolean) {
     const promises = [];
     const resultFiles = [];
     let outputResultFile;
@@ -75,7 +75,7 @@ export function printAndSaveResult(result: ApiResult, index: number, times: numb
             const absoluteOutputDir = outputVersioned ? path.resolve(outputDir, (index + 1).toString()) : outputDir;
             let absoluteFilename = path.resolve(outputDir, filename);
             let relativePath = path.relative(absoluteOutputDir, absoluteFilename);
-            if (relativePath.startsWith('..')) {
+            if (!editInPlace && relativePath.startsWith('..')) {
                 relativePath = relativePath.replace(/^(\.\.[/\\])+/, '');
             }
             const outputPath = path.join(absoluteOutputDir, relativePath);
