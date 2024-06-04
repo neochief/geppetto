@@ -28,7 +28,8 @@ export type MessageTextConfig = {
 export type MessageIncludeConfig = {
     include: string[],
     separator?: string,
-    asFiles?: boolean,
+    editInPlace?: boolean,
+    includesAsFiles?: boolean,
     role?: string,
 }
 

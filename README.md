@@ -113,8 +113,9 @@ gep prompt.md -s
 
 - `text`: text string that will be used as message.
 - `include`: array of path names to a files that will used as part of message. If the `text` is passed, the result of include is added after.
-- `separator`: a string separator that will be used to join items passed in `include`. By default, the separator is "\n\n";
-- `asFiles`: if true, each include will be wrapped in a special template that also includes the file name and the file path. This is useful when the exact files are important for the context. It's useful with conjunction with `outputAsFiles` option.
+- `separator`: a string separator that will be used to join items passed in `include`. By default, the separator is "\n\n". Don't specify when using `editInPlace` or `includesAsFiles`.
+- `editInPlace`: will treat each passed include as a basis for modification according to the prompt. Will save the results in the same files. Don't use `includesAsFiles` and any of the output options with this mode.
+- `includesAsFiles`: if true, each include will be wrapped in a special template that also includes the file name and the file path. This is useful when the exact files are important for the context. It's useful with conjunction with `outputAsFiles` option.
 - `role`: the default role that will be used for send all the messages (can be overridden in the message sub-files). This options specifies the type of the message (see `messages` in [API reference](https://platform.openai.com/docs/api-reference/chat)). Typically, a conversation is formatted with a `system` message first, followed by alternating `user` and `assistant` messages. Available values:
   - `user` (default): your prompt
   - `assistant`: LLM's reply
