@@ -3,23 +3,15 @@ import path from "path";
 import colors from "colors/safe";
 import { ApiResult } from "./types";
 
-export function getOutputDir(baseDir: string, outputDir: string, outputVersioned: boolean, model: string): { outputDir: string, outputPromptFile: string } | void {
+export function getOutputDir(outputDir: string, outputVersioned: boolean, model: string): { outputDir: string, outputPromptFile: string } | undefined {
     if (fs.existsSync(outputDir) && fs.lstatSync(outputDir).isFile()) {
         throw "The output option (" + outputDir + ") is a file. A directory expected."
     }
-
-    // if (!fs.existsSync(outputDir)) {
-    //     fs.mkdirSync(outputDir, {recursive: true});
-    // }
 
     if (outputVersioned) {
         let dirCount = fs.existsSync(outputDir) ? fs.readdirSync(outputDir).length : 0;
 
         outputDir = path.join(outputDir, (dirCount + 1).toString() + '__' + model);
-
-        // if (!fs.existsSync(outputDir)) {
-        //     fs.mkdirSync(outputDir, {recursive: true});
-        // }
 
         const outputPromptFile = path.join(outputDir, '_prompt.md');
 
@@ -72,13 +64,18 @@ export function printAndSaveResult(result: ApiResult, index: number, times: numb
             const filename = match[1];
             const content = match[2];
 
-            const absoluteOutputDir = outputVersioned ? path.resolve(outputDir, (index + 1).toString()) : outputDir;
-            let absoluteFilename = path.resolve(outputDir, filename);
-            let relativePath = path.relative(absoluteOutputDir, absoluteFilename);
-            if (!editInPlace && relativePath.startsWith('..')) {
-                relativePath = relativePath.replace(/^(\.\.[/\\])+/, '');
+            let outputPath;
+            if (filename.startsWith('/')) {
+                outputPath = filename;
+            } else if (outputDir) {
+                const absoluteOutputDir = outputVersioned ? path.resolve(outputDir, (index + 1).toString()) : outputDir;
+                let absoluteFilename = path.resolve(outputDir, filename);
+                let relativePath = path.relative(absoluteOutputDir, absoluteFilename);
+                if (!editInPlace && relativePath.startsWith('..')) {
+                    relativePath = relativePath.replace(/^(\.\.[/\\])+/, '');
+                }
+                outputPath = path.join(absoluteOutputDir, relativePath);
             }
-            const outputPath = path.join(absoluteOutputDir, relativePath);
 
             promises.push(new Promise<void>((resolve, reject) => {
                 fs.promises.mkdir(path.dirname(outputPath), {recursive: true})

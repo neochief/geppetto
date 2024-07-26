@@ -1,6 +1,6 @@
 {
   "name": "@neochief/geppetto",
-  "version": "1.1.11",
+  "version": "1.2.0",
   "description": "This tool let you use OpenAI's GPTs in a declarative way. Instead of endless chatting with GPT, you declare parts of your prompt, the context, the output location, the post-processing instructions in a set of files. Geppetto compiles these files into a single prompt and sends it to GPT, then saves the output in the specified location. When brainstorming, you can send multiple requests to GPT in a single run, receiving all the variations of answers for the same prompt.",
   "type": "commonjs",
   "main": "src/main.ts",
@@ -12,9 +12,10 @@
     "watch": "nodemon --exec 'npm run build'",
     "postbuild": "chmod +x dist/bin/gep.js",
     "test-dry": "node dist/bin/gep.js test/test.md --dry-run",
-    "test-gpt": "node dist/bin/gep.js test/test.md -t 1 --gpt",
-    "test-editing-gpt": "node dist/bin/gep.js test/test/testEditing.md -t 1 --gpt",
-    "test-claude": "node dist/bin/gep.js test/test.md -t 1 --claude"
+    "test-gpt": "node dist/bin/gep.js test/test.md --gpt",
+    "test-editing-gpt": "node dist/bin/gep.js test/test/testEditing.md --gpt",
+    "test-claude": "node dist/bin/gep.js test/test.md --claude",
+    "test-editing-gpt2": "node dist/bin/gep.js test/test/testEditing2.md test/editing --gpt"
   },
   "nodemonConfig": {
     "ignore": [
@@ -31,6 +32,7 @@
     "@commander-js/extra-typings": "^12.0.1",
     "colors": "^1.4.0",
     "commander": "^12.0.0",
+    "fast-glob": "^3.3.2",
     "gray-matter": "^4.0.3",
     "openai": "^4.26.1"
   },

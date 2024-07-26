@@ -1,10 +1,22 @@
+export type AIJob = {
+    messages: APIMessages,
+    times: number,
+    outputFile?: string,
+    outputDir: string,
+    outputVersioned: boolean,
+    outputAsFiles: boolean,
+    editInPlace: boolean,
+}
+
 export type FileResult = {
     messages: APIMessages;
-    baseDir?: string;
+    taskBaseDir?: string;
+    outputFile?: string,
     outputDir?: string;
     outputVersioned?: boolean;
     outputAsFiles?: boolean;
     editInPlace?: boolean;
+    times?: number;
 };
 
 export type FileMessageConfig = {

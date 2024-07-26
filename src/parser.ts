@@ -19,11 +19,38 @@ I will pass the contents of several files to you as follows. You will need to pe
 = End of file: %filename% ==================
 `
 
-
 let isEditingFiles = false;
 
-export async function extractMessagesFromFile(filename: string, roleOverride?, isSubfile: boolean = false): Promise<FileResult> {
-    const fileContent = await fs.promises.readFile(filename, 'utf8');
+export async function extractMessagesFromTaskFileAndIncludeFile(taskFile: string, includeFile: string): Promise<FileResult> {
+    const result = extractMessagesFromTaskFile(taskFile);
+
+    return new Promise<FileResult>((resolve, reject) => {
+        result.then((result) => {
+            readIncludeFile(includeFile).then((content) => {
+                if (content.trim()) {
+                    if (!result.editInPlace) {
+                        result.messages = [
+                            {role: "system", content: editingPrompt} as APIMessage,
+                            ...result.messages];
+                        result.outputAsFiles = true;
+                        result.outputVersioned = false;
+                        result.editInPlace = true;
+                    }
+
+                    const header = `= File: ${ includeFile } =========================\n`;
+                    const footer = `\n= End of file: ${ includeFile } ==================`;
+                    const message = header + content + footer;
+                    result.messages.push({role: "user", content: message} as APIMessage);
+                }
+                result.outputFile = includeFile;
+                resolve(result);
+            }).catch(reject);
+        }).catch(reject);
+    });
+}
+
+export async function extractMessagesFromTaskFile(taskFile: string, roleOverride?, isSubfile: boolean = false): Promise<FileResult> {
+    const fileContent = await fs.promises.readFile(taskFile, 'utf8');
     let parts = matter(fileContent);
     let data = parts.data as FileMessageConfig;
     let content = parts.content as string;
@@ -31,9 +58,9 @@ export async function extractMessagesFromFile(filename: string, roleOverride?, i
     let result = {} as FileResult;
     result.messages = [] as APIMessages;
 
-    result.baseDir = path.dirname(filename);
+    result.taskBaseDir = path.dirname(taskFile);
     if (data.baseDir) {
-        result.baseDir = path.resolve(result.baseDir, data.baseDir);
+        result.taskBaseDir = path.resolve(result.taskBaseDir, data.baseDir);
     }
 
     if (!isSubfile) {
@@ -41,11 +68,13 @@ export async function extractMessagesFromFile(filename: string, roleOverride?, i
         if (outputDir.startsWith('/')) {
             result.outputDir = outputDir;
         } else {
-            result.outputDir = path.resolve(result.baseDir, outputDir);
+            result.outputDir = path.resolve(result.taskBaseDir, outputDir);
         }
     }
 
     result.outputVersioned = data.outputVersioned === undefined ? true : data.outputVersioned;
+
+    result.times = !result.outputVersioned ? 1 : (result.times || 1);
 
     if (data.messages) {
         const messageConfigs = data.messages;
@@ -53,16 +82,16 @@ export async function extractMessagesFromFile(filename: string, roleOverride?, i
         for (let config of messageConfigs) {
             if (config.hasOwnProperty('file')) {
 
-                const fullPath = path.resolve(result.baseDir, (config as MessageFileConfig).file);
+                const fullPath = path.resolve(result.taskBaseDir, (config as MessageFileConfig).file);
                 if (!fs.existsSync(fullPath)) {
                     throw `Error: Subfile ${ fullPath } does not exist.`;
                 }
-                const includeContent = await extractMessagesFromFile(fullPath, config.role, true);
+                const includeContent = await extractMessagesFromTaskFile(fullPath, config.role, true);
                 result.messages = result.messages.concat(includeContent.messages);
             }
 
             if (config.hasOwnProperty('text') || config.hasOwnProperty('include')) {
-                let textContent = await processTextAndInclude(result.baseDir, filename, config as MessageTextConfig | MessageIncludeConfig);
+                let textContent = await processTextAndInclude(result.taskBaseDir, taskFile, config as MessageTextConfig | MessageIncludeConfig);
                 if (textContent.trim()) {
                     result.messages.push({role: config.role || roleOverride || "user", content: textContent} as APIMessage);
                 }
@@ -71,7 +100,7 @@ export async function extractMessagesFromFile(filename: string, roleOverride?, i
     }
 
     if ("text" in data || "include" in data) {
-        let textContent = await processTextAndInclude(result.baseDir, filename, data as MessageTextConfig | MessageIncludeConfig, content);
+        let textContent = await processTextAndInclude(result.taskBaseDir, taskFile, data as MessageTextConfig | MessageIncludeConfig, content);
         if (textContent.trim()) {
             result.messages.push({role: ("role" in data ? data.role : null) || roleOverride || "user", content: textContent} as APIMessage);
         }
@@ -87,9 +116,7 @@ export async function extractMessagesFromFile(filename: string, roleOverride?, i
         result.editInPlace = true;
 
     } else if (result.outputAsFiles !== undefined) {
-
         result.messages = [{role: "system", content: asFilesPrompt} as APIMessage, ...result.messages];
-
     }
 
     return result;
