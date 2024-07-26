@@ -9,6 +9,7 @@ interface Options {
     gpt?: boolean;
     claude?: boolean;
     times?: number;
+    serial?: boolean;
     silent?: boolean;
     dryRun?: boolean;
 }
@@ -17,6 +18,7 @@ interface Args {
     task: string;
     targetFiles: string[];
     model: string;
+    serial: boolean;
     silent: boolean;
     dryRun: boolean;
 }
@@ -28,12 +30,15 @@ export function handleArgs(): Args {
         .option('-m, --model <type>', 'Specify the model', defaultModel)
         .option('--gpt', 'A shorthand to use the best OpenAI model')
         .option('--claude', 'A shorthand to use the best Anthropic model')
+        .option('--serial', 'Run the API calls one after another')
         .option('-s, --silent', 'Don\'t print the prompt and results')
         .option('--dry-run', 'Don\'t print the prompt and results');
 
     program.parse(process.argv);
 
     const options: Options = program.opts();
+
+
 
     let model;
 
@@ -46,6 +51,13 @@ export function handleArgs(): Args {
     }
     if (model && !supportedModels.includes(model)) {
         throw `Error: Model ${ model } is not supported. Please use one of the following models: ${ supportedModels.join(', ') }`;
+    }
+
+    let serial = options.serial || false;
+
+    if (model && allSupportedModels.anthropic.includes(model)) {
+        // Anthropic models effectively run serially because of the rate limit.
+        serial = true;
     }
 
     const silent = options.silent || false;
@@ -73,5 +85,5 @@ export function handleArgs(): Args {
         targetFiles = targetFiles.concat(expanded);
     });
 
-    return {task, targetFiles, model, silent, dryRun};
+    return {task, targetFiles, model, serial, silent, dryRun};
 }

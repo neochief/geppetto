@@ -40,7 +40,7 @@ function processAIJob(job: AIJob, api, model, silent, dryRun) {
 }
 
 export async function main() {
-    let {task, targetFiles, model, silent, dryRun} = handleArgs();
+    let {task, targetFiles, model, serial, silent, dryRun} = handleArgs();
 
     const api = initializeApi(model);
 
@@ -90,6 +90,10 @@ export async function main() {
         apiPromises.push(...someApiPromises);
         apiErrors.push(...someApiErrors);
         otherPromises.push(...someOtherPromises);
+
+        if (serial) {
+            await Promise.allSettled(apiPromises);
+        }
     }
 
     await Promise.allSettled(apiPromises).then(() => {
