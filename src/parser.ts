@@ -107,15 +107,15 @@ export async function extractMessagesFromTaskFile(taskFile: string, roleOverride
     }
 
     if (isEditingFiles) {
-
         result.messages = [
             {role: "system", content: editingPrompt} as APIMessage,
             ...result.messages];
         result.outputAsFiles = true;
         result.outputVersioned = false;
         result.editInPlace = true;
+    }
 
-    } else if (result.outputAsFiles !== undefined) {
+    if (result.outputAsFiles !== undefined) {
         result.messages = [{role: "system", content: asFilesPrompt} as APIMessage, ...result.messages];
     }
 
