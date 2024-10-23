@@ -72,6 +72,7 @@ export async function extractMessagesFromTaskFile(taskFile: string, roleOverride
         }
     }
 
+    result.outputAsFiles = data.outputAsFiles === undefined ? false : data.outputAsFiles;
     result.outputVersioned = data.outputVersioned === undefined ? true : data.outputVersioned;
 
     result.times = !result.outputVersioned ? 1 : (result.times || 1);
@@ -115,7 +116,7 @@ export async function extractMessagesFromTaskFile(taskFile: string, roleOverride
         result.editInPlace = true;
     }
 
-    if (result.outputAsFiles !== undefined) {
+    if (result.outputAsFiles) {
         result.messages = [{role: "system", content: asFilesPrompt} as APIMessage, ...result.messages];
     }
 
