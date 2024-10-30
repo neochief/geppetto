@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import matter from "gray-matter";
+import yaml from "js-yaml";
 import { APIMessage, APIMessages, FileMessageConfig, FileResult, MessageConfig, MessageFileConfig, MessageIncludeConfig, MessageTextConfig } from "./types";
 
 const asFilesPrompt = `
@@ -51,9 +52,21 @@ export async function extractMessagesFromTaskFileAndIncludeFile(taskFile: string
 
 export async function extractMessagesFromTaskFile(taskFile: string, roleOverride?, isSubfile: boolean = false): Promise<FileResult> {
     const fileContent = await fs.promises.readFile(taskFile, 'utf8');
-    let parts = matter(fileContent);
-    let data = parts.data as FileMessageConfig;
-    let content = parts.content as string;
+    const fileExt = path.extname(taskFile).toLowerCase();
+    
+    let data: FileMessageConfig;
+    let content: string = '';
+
+    if (fileExt === '.yml' || fileExt === '.yaml') {
+        const parsed = yaml.load(fileContent) as any;
+        content = parsed.content || '';
+        delete parsed.content;
+        data = parsed;
+    } else {
+        const parts = matter(fileContent);
+        data = parts.data as FileMessageConfig;
+        content = parts.content as string;
+    }
 
     let result = {} as FileResult;
     result.messages = [] as APIMessages;

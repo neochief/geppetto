@@ -17,7 +17,7 @@ Sign up for OpenAI API and set your API key as an environment variable. See the 
 
 ### 2. Define your prompt file
 
-A prompt file is a free form markdown file with a few optional sections that you can define in the front matter (stuff at the beginning of the file between ---). Here's an example
+A prompt file can be either a Markdown file with front matter, or a YAML file. Here's an example of both formats:
 
 **prompt.md**
 ```markdown
@@ -32,6 +32,19 @@ outputDir: results
 ---
 
 What is the meaning of life?
+```
+
+**prompt.yml**
+```yaml
+messages:
+  - file: prompt_style.md
+  - text: Don't forget that you're a Roman Emperor.
+    role: system
+include:
+  - ps.md
+outputDir: results
+content: |
+  What is the meaning of life?
 ```
 
 **ps.md**
