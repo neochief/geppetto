@@ -4,8 +4,9 @@ import { APIMessages, ApiResult } from "./types";
 import { MessageParam } from "@anthropic-ai/sdk/src/resources/messages";
 
 export const allSupportedModels = {
-    "openai": ['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'],
-    "anthropic": ["claude-3-opus-20240229", 'claude-3-sonnet-20240229'],
+    "anthropic": ["claude-opus-4-20250514", "claude-sonnet-4-20250514"],
+    "openai": ['gpt-4.1-2025-04-14'],
+    "o3": ['o3-2025-04-16'],
 }
 export const supportedModels = Object.values(allSupportedModels).reduce((acc, val) => acc.concat(val), []);
 export const defaultModel = supportedModels[0];

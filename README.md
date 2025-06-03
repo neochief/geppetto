@@ -106,12 +106,10 @@ gep prompt.md -m gpt-3.5-turbo
 
 Available models: 
 
-- gpt-4-turbo
-- gpt-4o
-- gpt-4
-- gpt-3.5-turbo
-- claude-3-opus-20240229
-- claude-3-sonnet-20240229
+- claude-opus-4-20250514 (--claude) ← the default
+- claude-sonnet-4-20250514
+- o3-2025-04-16 (--o3)
+- gpt-4.1-2025-04-14 (--gpt)
 
 Instead of passing the `-m` paramter, you can also use shorthands `--gpt` or `--claude` for selecting the best models from the respective families.
 
