@@ -46,6 +46,8 @@ export function handleArgs(): Args {
 
     if (options.gpt) {
         model = allSupportedModels.openai[0];
+    } else if (options.o3) {
+        model = allSupportedModels.o3[0];
     } else if (options.claude) {
         model = allSupportedModels.anthropic[0];
     } else {
