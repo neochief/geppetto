@@ -16,7 +16,7 @@ export function initializeApi(model: string) {
         throw `Error: Model ${ model } is not supported. Please use one of the following models: ${ supportedModels.join(', ') }`;
     }
 
-    if (allSupportedModels.openai.includes(model)) {
+    if (allSupportedModels.openai.includes(model) || allSupportedModels.o3.includes(model)) {
         if (!process.env.OPENAI_API_KEY) {
             throw "Error: OPENAI_API_KEY environment variable is not set.";
         }
