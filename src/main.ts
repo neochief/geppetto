@@ -1,11 +1,11 @@
 import colors from 'colors/safe';
-import { extractMessagesFromTaskFile, extractMessagesFromTaskFileAndIncludeFile } from "./parser";
-import { handleArgs } from "./args";
-import { initializeApi } from "./api";
-import { getOutputDir, prepareOutputDir, printAndSaveResult, printPrompt, writePrompt } from "./misc";
-import { AIJob } from "./types";
+import {extractMessagesFromTaskFile, extractMessagesFromTaskFileAndIncludeFile} from "./parser";
+import {handleArgs} from "./args";
+import {APIClient, initializeApi} from "./api";
+import {getOutputDir, prepareOutputDir, printAndSaveResult, printPrompt, writePrompt} from "./misc";
+import {AIJob} from "./types";
 
-function processAIJob(job: AIJob, api, model, silent, dryRun) {
+async function processAIJob(job: AIJob, api: APIClient, model, silent, dryRun) {
     let outputDir, outputPromptFile;
     const result = getOutputDir(job.outputDir, job.outputVersioned, model);
     outputDir = result?.outputDir || job.outputDir;
@@ -15,17 +15,32 @@ function processAIJob(job: AIJob, api, model, silent, dryRun) {
     printPrompt(job.messages, outputPromptFile, silent, dryRun);
 
     if (dryRun) {
-        console.log(colors.bgGreen(`\n# Dry run. No API calls will be made.\nExpect results in: ${ expectedOutputPath }` + "\n--------------------"));
-        return [[], [], []];
+        console.log(colors.bgGreen(`\n# Dry run. No API calls will be made.\nExpect results in: ${expectedOutputPath}` + "\n--------------------"));
+        return {apiErrors: [], otherPromises: []};
     }
 
     prepareOutputDir(outputDir, outputPromptFile);
 
     writePrompt(job.messages, outputPromptFile, silent, dryRun)
 
-    console.log(colors.bgGreen(`\n# Connecting to API using model: ${ model }\nExpect results in: ${ expectedOutputPath }` + "\n--------------------"));
+    console.log(colors.bgGreen(`\n# Connecting to API using model: ${model}\nExpect results in: ${expectedOutputPath}` + "\n--------------------"));
 
-    return api.call(job.messages, model, job.times);
+    const apiPromises = api.call(job.messages, model, job.times);
+
+    const results = await Promise.allSettled(apiPromises);
+
+    const apiErrors = [], otherPromises = [];
+
+    for (let index = 0; index < results.length; index++) {
+        const result = results[index];
+        if (result.status === "fulfilled") {
+            otherPromises.push(printAndSaveResult(result.value, index, job.times, outputDir, job.outputVersioned, job.outputAsFiles, job.editInPlace, silent));
+        } else {
+            apiErrors.push(result.reason.message || result.reason);
+        }
+    }
+
+    return {apiErrors, otherPromises};
 }
 
 export async function main() {
@@ -59,7 +74,14 @@ export async function main() {
             });
         });
     } else {
-        let {messages, outputDir, outputVersioned, outputAsFiles, editInPlace, times} = await extractMessagesFromTaskFile(task);
+        let {
+            messages,
+            outputDir,
+            outputVersioned,
+            outputAsFiles,
+            editInPlace,
+            times
+        } = await extractMessagesFromTaskFile(task);
         jobs.push({
             messages,
             times,
@@ -70,45 +92,42 @@ export async function main() {
         });
     }
 
-    const apiPromises = [] as Promise<any>[];
-    const otherPromises = [] as Promise<any>[];
-    const apiErrors = [] as string[];
+    const allApiPromises = [] as Promise<{ apiErrors: any, otherPromises: any }>[];
+    const allOtherPromises = [] as Promise<any>[];
+    const allApiErrors = [] as string[];
 
-    for (let job of jobs) {
-        const _apiPromises = processAIJob(job, api, model, silent, dryRun)
-        const otherPromises = [] as Promise<any>[];
-        const apiErrors = [];
-        const result = getOutputDir(job.outputDir, job.outputVersioned, model);
-        const outputDir = result?.outputDir || job.outputDir;
-        _apiPromises.forEach((promise, index) => {
-            promise.then((result) => {
-                otherPromises.push(printAndSaveResult(result, index, job.times, outputDir, job.outputVersioned, job.outputAsFiles, job.editInPlace, silent));
-            }, (e) => {
-                apiErrors.push(e.message);
-            });
-        });
-
-        apiPromises.push(..._apiPromises);
-
+    for (let index = 0; index < jobs.length; index++) {
+        const job = jobs[index];
+        allApiPromises.push(processAIJob(job, api, model, silent, dryRun));
         if (serial) {
-            await Promise.allSettled(apiPromises);
+            await Promise.allSettled(allApiPromises);
         }
     }
 
-    await Promise.allSettled(apiPromises).then(() => {
+    await Promise.allSettled(allApiPromises).then((results) => {
+        results.forEach((result) => {
+            if (result.status === "fulfilled") {
+                const {apiErrors, otherPromises} = result.value;
+                allApiErrors.push(...apiErrors);
+                allOtherPromises.push(...otherPromises);
+            }
+        });
+    });
+
+    await Promise.allSettled(allApiPromises).then(() => {
         if (!silent) {
-            const successes = jobs.length - apiErrors.length;
+            const successes = jobs.length - allApiErrors.length;
 
             if (successes) {
-                console.log((colors.bgGreen(`\nDone! (${ successes } of ${ jobs.length })`)));
+                console.log((colors.bgGreen(`\nDone! (${successes} of ${jobs.length})`)));
             }
 
-            if (apiErrors.length) {
-                console.error(colors.bgRed(`\nFailed to complete ${ apiErrors.length } of ${ jobs.length } requests:`));
-                console.error(colors.bgRed(apiErrors.join("\n")));
+            if (allApiErrors.length) {
+                console.error(colors.bgRed(`\nFailed to complete ${allApiErrors.length} of ${jobs.length} requests:`));
+                console.error(colors.bgRed(allApiErrors.join("\n")));
             }
         }
     });
 
-    await Promise.allSettled(otherPromises);
+    await Promise.allSettled(allOtherPromises);
 }
