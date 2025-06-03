@@ -98,7 +98,7 @@ gep prompt.md -t 10
 
 ### `-m`: LLM model to use
 
-You can use different LLM models by specifying the `-m` option. The default is `gpt-4-turbo-preview`.
+You can use different LLM models by specifying the `-m` option. The default is `claude-opus-4-20250514`.
 
 ```bash
 gep prompt.md -m gpt-3.5-turbo
