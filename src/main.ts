@@ -25,18 +25,7 @@ function processAIJob(job: AIJob, api, model, silent, dryRun) {
 
     console.log(colors.bgGreen(`\n# Connecting to API using model: ${ model }\nExpect results in: ${ expectedOutputPath }` + "\n--------------------"));
 
-    const apiPromises = api.call(job.messages, model, job.times);
-    const otherPromises = [] as Promise<any>[];
-    const apiErrors = [];
-    apiPromises.forEach((promise, index) => {
-        promise.then((result) => {
-            otherPromises.push(printAndSaveResult(result, index, job.times, outputDir, job.outputVersioned, job.outputAsFiles, job.editInPlace, silent));
-        }, (e) => {
-            apiErrors.push(e.message);
-        });
-    });
-
-    return [apiPromises, apiErrors, otherPromises];
+    return api.call(job.messages, model, job.times);
 }
 
 export async function main() {
@@ -86,10 +75,20 @@ export async function main() {
     const apiErrors = [] as string[];
 
     for (let job of jobs) {
-        const [someApiPromises, someApiErrors, someOtherPromises] = processAIJob(job, api, model, silent, dryRun);
-        apiPromises.push(...someApiPromises);
-        apiErrors.push(...someApiErrors);
-        otherPromises.push(...someOtherPromises);
+        const _apiPromises = processAIJob(job, api, model, silent, dryRun)
+        const otherPromises = [] as Promise<any>[];
+        const apiErrors = [];
+        const result = getOutputDir(job.outputDir, job.outputVersioned, model);
+        const outputDir = result?.outputDir || job.outputDir;
+        _apiPromises.forEach((promise, index) => {
+            promise.then((result) => {
+                otherPromises.push(printAndSaveResult(result, index, job.times, outputDir, job.outputVersioned, job.outputAsFiles, job.editInPlace, silent));
+            }, (e) => {
+                apiErrors.push(e.message);
+            });
+        });
+
+        apiPromises.push(..._apiPromises);
 
         if (serial) {
             await Promise.allSettled(apiPromises);
