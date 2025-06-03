@@ -7,6 +7,7 @@ import fg from "fast-glob";
 interface Options {
     model?: string;
     gpt?: boolean;
+    o3?: boolean;
     claude?: boolean;
     times?: number;
     serial?: boolean;
@@ -29,6 +30,7 @@ export function handleArgs(): Args {
         .argument('[target...]', 'Target path. You can use file masks like some/path/*.txt')
         .option('-m, --model <type>', 'Specify the model', defaultModel)
         .option('--gpt', 'A shorthand to use the best OpenAI model')
+        .option('--o3', 'A shorthand to use the OpenAI O3 model')
         .option('--claude', 'A shorthand to use the best Anthropic model')
         .option('--serial', 'Run the API calls one after another')
         .option('-s, --silent', 'Don\'t print the prompt and results')
